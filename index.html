@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jackson Energy Authority Financials</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --white:#FFFFFF; --off:#F5F7FA; --rule:#DDE2E8; --rule-lt:#ECEEF2;
+  --text:#0D1B2E; --text2:#3A4A5C; --text3:#6B7B8D; --text4:#9AAABA;
+  --navy:#0D1B2E; --navy2:#1A3050; --navy3:#2A4A70;
+  --red:#C41230; --red2:#E8203E; --red-bg:#FEF0F2;
+  --green:#0F6B3A; --green-bg:#EAF5EE;
+  --blue:#1A4A8A; --blue-bg:#EAF0FA;
+  --amber:#8A5A00; --amber-bg:#FEF5E4;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--off);color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* PAGE */
+.page{max-width:1200px;margin:0 auto;padding:36px 28px 72px}
+
+/* MASTHEAD */
+.mast{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:20px;padding-bottom:16px;border-bottom:2px solid var(--navy);margin-bottom:0}
+.mast-l .eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:5px}
+.mast-l h1{font-family:'Playfair Display',serif;font-size:clamp(24px,3.5vw,36px);font-weight:600;color:var(--navy);line-height:1.1;letter-spacing:-.01em}
+.mast-l .byline{margin-top:5px;font-size:12px;color:var(--text3);font-weight:300}
+.mast-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
+.tag-n{border-color:var(--navy);color:var(--navy)}
+.tag-r{border-color:var(--red);color:var(--red)}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:24px;margin-top:0;background:var(--white);border-top:none;overflow-x:auto}
+.tab{padding:13px 22px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--navy);border-bottom-color:var(--red)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--white);border:1px solid var(--rule);margin-bottom:20px}
+@media(max-width:900px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:580px){.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+.kpi{padding:18px 20px;border-right:1px solid var(--rule);position:relative}
+.kpi:last-child{border-right:none}
+.kpi-accent::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--navy)}
+.kl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.kv{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--navy);line-height:1;margin-bottom:6px}
+.kv .u{font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:600;color:var(--text3)}
+.kdelta{font-size:11px;font-weight:600;padding:2px 6px;display:inline-block}
+.up{background:var(--green-bg);color:var(--green)}
+.dn{background:var(--red-bg);color:var(--red)}
+.ne{background:var(--blue-bg);color:var(--blue)}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g32{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.g23{display:grid;grid-template-columns:1fr 2fr;gap:16px}
+@media(max-width:800px){.g2,.g3,.g32,.g23{grid-template-columns:1fr}}
+.span2{grid-column:1/-1}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--rule);padding:20px 22px}
+.card+.card{margin-top:0}
+.ct{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--rule-lt);display:flex;align-items:center;justify-content:space-between}
+.ct-note{font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text4)}
+.cw{position:relative;width:100%}
+.gap{margin-top:16px}
+
+/* SECTION DIVIDERS */
+.sh{display:flex;align-items:center;gap:12px;margin:24px 0 14px}
+.sh h2{font-family:'Playfair Display',serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--navy);white-space:nowrap}
+.shr{flex:1;height:1px;background:var(--rule)}
+.shn{font-size:11px;color:var(--text3);white-space:nowrap}
+
+/* DATA TABLE */
+.tbl-wrap{background:var(--white);border:1px solid var(--rule);overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;min-width:600px}
+table.tbl thead{background:var(--navy)}
+table.tbl thead th{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.75);padding:10px 13px;text-align:left;white-space:nowrap}
+table.tbl thead th:not(:first-child){text-align:right}
+table.tbl tbody td{padding:9px 13px;font-size:12.5px;border-bottom:1px solid var(--rule-lt);color:var(--text2);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.tbl tbody tr:last-child td{border-bottom:none}
+table.tbl tbody tr:hover td{background:#F0F4F8}
+table.tbl tbody td:not(:first-child){text-align:right;font-weight:300}
+table.tbl tbody td.bold{font-weight:700;color:var(--navy)}
+table.tbl tbody tr.total td{font-weight:700;color:var(--navy);background:var(--off);border-top:1px solid var(--rule)}
+table.tbl tbody tr.section-row td{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);background:var(--off);padding:7px 13px}
+.div-bar{height:3px;background:var(--rule-lt);margin-top:4px}
+.div-bar-f{height:100%}
+
+/* PILL / BADGE */
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;letter-spacing:.04em}
+
+/* LEGEND */
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.ls{width:10px;height:10px;flex-shrink:0}
+
+/* SPARKLINE ROW */
+.ratio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+@media(max-width:800px){.ratio-grid{grid-template-columns:repeat(2,1fr)}}
+.ratio-card{background:var(--white);border:1px solid var(--rule);padding:16px 18px}
+.rl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.rv{font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);line-height:1;margin-bottom:4px}
+.rsub{font-size:11px;color:var(--text3)}
+
+/* WATERFALL ROW */
+.wf-val{font-family:'Playfair Display',serif;font-size:14px}
+
+/* FOOTER */
+.foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--rule);font-size:11px;color:var(--text3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.foot a{color:var(--navy);font-weight:600;text-decoration:none}
+.foot a:hover{text-decoration:underline}
+
+/* ANNOTATIONS */
+.anno{display:flex;gap:8px;align-items:flex-start;padding:10px 14px;border-left:3px solid;font-size:12px;margin-bottom:12px}
+.anno-r{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.anno-g{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.anno-b{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.anno-a{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
+.anno strong{font-weight:700}
+
+/* CHANGE CELL COLORS */
+.pos{color:var(--green);font-weight:600}
+.neg{color:var(--red);font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- MASTHEAD -->
+<div class="mast">
+  <div class="mast-l">
+    <h1>Jackson Energy Authority Financials</h1>
+    <div class="byline">Jackson, Tennessee &nbsp;·&nbsp; Municipal Multi-Utility &nbsp;·&nbsp; Fiscal Years 2015–2025</div>
+  </div>
+
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab" onclick="switchTab('revenue')">Revenue Analysis</button>
+  <button class="tab" onclick="switchTab('expenses')">Expense Analysis</button>
+  <button class="tab" onclick="switchTab('balance')">Balance Sheet</button>
+  <button class="tab" onclick="switchTab('ratios')">Key Ratios</button>
+  <button class="tab" onclick="switchTab('rawdata')">Raw Data</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 1 — OVERVIEW
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-overview" class="tab-panel active">
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi kpi-accent">
+      <div class="kl">Total Revenue</div>
+      <div class="kv" style="font-size:18px"><span class="u">$</span>289,418,169</div>
+      <span class="kdelta up">▲ +8.1%</span>
+    </div>
+    <div class="kpi">
+      <div class="kl">Operating Income</div>
+      <div class="kv" style="font-size:18px"><span class="u">$</span>20,945,766</div>
+      <span class="kdelta up">▲ +38.5%</span>
+    </div>
+    <div class="kpi">
+      <div class="kl">Operating Margin</div>
+      <div class="kv">7.2<span class="u">%</span></div>
+      <span class="kdelta up">▲ vs 5.6% prior yr</span>
+    </div>
+    <div class="kpi">
+      <div class="kl">Total Net Position</div>
+      <div class="kv" style="font-size:18px"><span class="u">$</span>578,401,654</div>
+      <span class="kdelta up">▲ +$30,538,458</span>
+    </div>
+    <div class="kpi">
+      <div class="kl">Customer Meters</div>
+      <div class="kv">162,598</div>
+      <span class="kdelta up">▲ +2,039 new</span>
+    </div>
+  </div>
+
+  <!-- Revenue + Income trend -->
+  <div class="g32 gap">
+    <div class="card">
+      <div class="ct">11-Year Revenue &amp; Operating Income <span class="ct-note">$ Millions · FY2015–FY2025</span></div>
+      <div class="cw" style="height:240px"><canvas id="ov_rev"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">FY2025 Revenue Mix</div>
+      <div class="leg" id="ov_mix_leg"></div>
+      <div class="cw" style="height:190px"><canvas id="ov_mix"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Net position + annotations -->
+  <div class="gap">
+    <div class="card">
+      <div class="ct">Net Position Growth — All Funds <span class="ct-note">$ Millions</span></div>
+      <div class="cw" style="height:200px"><canvas id="ov_net"></canvas></div>
+    </div>
+  </div>
+
+</div><!-- /overview -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 2 — REVENUE ANALYSIS
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-revenue" class="tab-panel">
+
+  <div class="sh"><h2>Revenue by Division — 11-Year Trend</h2><div class="shr"></div><span class="shn">$ Millions</span></div>
+
+  <div class="card span2">
+    <div class="ct">Stacked Revenue by Division <span class="ct-note">Electric · Gas · Water · Wastewater · Telecom</span></div>
+    <div class="cw" style="height:280px"><canvas id="rv_stack"></canvas></div>
+  </div>
+
+  <div class="g2 gap">
+    <div class="card">
+      <div class="ct">Electric Fund Revenue <span class="ct-note">Largest division · 59% of total</span></div>
+      <div class="cw" style="height:200px"><canvas id="rv_elec"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Gas Fund Revenue <span class="ct-note">Second largest · 13.5%</span></div>
+      <div class="cw" style="height:200px"><canvas id="rv_gas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g3 gap">
+    <div class="card">
+      <div class="ct">Water Revenue</div>
+      <div class="cw" style="height:160px"><canvas id="rv_water"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Wastewater Revenue</div>
+      <div class="cw" style="height:160px"><canvas id="rv_ww"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">EPlus Broadband</div>
+      <div class="cw" style="height:160px"><canvas id="rv_tele"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>Year-over-Year Revenue Changes</h2><div class="shr"></div></div>
+  <div class="card span2">
+    <div class="ct">Annual Revenue Growth (%) — All Divisions</div>
+    <div class="cw" style="height:220px"><canvas id="rv_yoy"></canvas></div>
+  </div>
+
+  <div class="sh gap"><h2>Division Table — All Years</h2><div class="shr"></div></div>
+  <div class="tbl-wrap">
+    <table class="tbl" id="rv_table"></table>
+  </div>
+
+</div><!-- /revenue -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 3 — EXPENSE ANALYSIS
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-expenses" class="tab-panel">
+
+  <div class="sh"><h2>Operating Expenses Overview</h2><div class="shr"></div><span class="shn">$ Millions</span></div>
+
+  <div class="g32">
+    <div class="card">
+      <div class="ct">Total Revenue vs. Total Expenses <span class="ct-note">Surplus = operating income</span></div>
+      <div class="cw" style="height:240px"><canvas id="ex_revexp"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">FY2025 Expense Breakdown</div>
+      <div class="leg" id="ex_leg"></div>
+      <div class="cw" style="height:185px"><canvas id="ex_donut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g2 gap">
+    <div class="card">
+      <div class="ct">Cost of Sales &amp; Services <span class="ct-note">Primarily TVA power purchases</span></div>
+      <div class="cw" style="height:190px"><canvas id="ex_cos"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Operations &amp; Maintenance Expense</div>
+      <div class="cw" style="height:190px"><canvas id="ex_om"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g2 gap">
+    <div class="card">
+      <div class="ct">Depreciation Expense <span class="ct-note">Capital asset consumption</span></div>
+      <div class="cw" style="height:190px"><canvas id="ex_dep"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Payment in Lieu of Taxes (PILOT) <span class="ct-note">Community contribution</span></div>
+      <div class="cw" style="height:190px"><canvas id="ex_pilot"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>Operating Margin Trend</h2><div class="shr"></div></div>
+  <div class="card span2">
+    <div class="ct">Operating Margin % — FY2015 to FY2025 <span class="ct-note">Operating Income ÷ Total Revenue</span></div>
+    <div class="cw" style="height:200px"><canvas id="ex_margin"></canvas></div>
+  </div>
+
+</div><!-- /expenses -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 4 — BALANCE SHEET
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-balance" class="tab-panel">
+
+  <div class="sh"><h2>Electric Fund — Net Position Detail</h2><div class="shr"></div><span class="shn">Electric Fund only · $ Millions</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Total Assets vs. Total Liabilities <span class="ct-note">Electric Fund</span></div>
+      <div class="cw" style="height:220px"><canvas id="bs_el_al"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Electric Fund Net Position Growth</div>
+      <div class="cw" style="height:220px"><canvas id="bs_el_net"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>All-Fund Net Position</h2><div class="shr"></div><span class="shn">$ Millions</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Net Position by Division — FY2025</div>
+      <div class="leg" id="bs_div_leg"></div>
+      <div class="cw" style="height:200px"><canvas id="bs_div"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Total Net Position — All Funds Combined</div>
+      <div class="cw" style="height:200px"><canvas id="bs_total"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>Capital Assets — Electric Fund</h2><div class="shr"></div></div>
+  <div class="card span2">
+    <div class="ct">Capital Assets vs. Current &amp; Other Assets — Electric Fund</div>
+    <div class="cw" style="height:200px"><canvas id="bs_capasset"></canvas></div>
+  </div>
+
+</div><!-- /balance -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 5 — KEY RATIOS
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-ratios" class="tab-panel">
+
+  <div class="sh"><h2>Profitability Ratios</h2><div class="shr"></div></div>
+
+  <div class="ratio-grid" style="grid-template-columns:1fr">
+    <div class="ratio-card">
+      <div class="rl">Operating Margin</div>
+      <div class="rv">7.24%</div>
+      <div class="rsub">FY2025 · 5-yr avg: 7.4%</div>
+    </div>
+  </div>
+
+  <div class="g2 gap">
+    <div class="card">
+      <div class="ct">Operating Margin % — 11 Years</div>
+      <div class="cw" style="height:200px"><canvas id="ra_margin"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Revenue Coverage Ratio <span class="ct-note">Revenue ÷ Expenses</span></div>
+      <div class="cw" style="height:200px"><canvas id="ra_cov"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>Division Performance</h2><div class="shr"></div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Operating Income by Division — FY2025 <span class="ct-note">$ Millions</span></div>
+      <div class="cw" style="height:210px"><canvas id="ra_div_oi"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Revenue Growth Index <span class="ct-note">FY2015 = 100</span></div>
+      <div class="cw" style="height:210px"><canvas id="ra_idx"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sh gap"><h2>PILOT &amp; Community Contribution</h2><div class="shr"></div></div>
+  <div class="card span2">
+    <div class="ct">Payment in Lieu of Taxes (PILOT) as % of Revenue <span class="ct-note">JEA's contribution to the City of Jackson in lieu of property taxes</span></div>
+    <div class="cw" style="height:180px"><canvas id="ra_pilot_pct"></canvas></div>
+  </div>
+
+</div><!-- /ratios -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB 6 — RAW DATA
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-rawdata" class="tab-panel">
+
+  <div class="sh"><h2>Statement of Revenues, Expenses &amp; Changes in Net Position</h2><div class="shr"></div><span class="shn">$ actual (not rounded) · Audited</span></div>
+
+  <div class="tbl-wrap">
+    <table class="tbl" id="raw_income"></table>
+  </div>
+
+  <div class="sh gap"><h2>Electric Fund — Balance Sheet Highlights</h2><div class="shr"></div><span class="shn">$ Millions · Selected line items</span></div>
+  <div class="tbl-wrap">
+    <table class="tbl" id="raw_bs"></table>
+  </div>
+
+  <div class="sh gap"><h2>Division Revenue Detail</h2><div class="shr"></div><span class="shn">All figures in $ Millions · Audited from TN Comptroller reports</span></div>
+  <div class="tbl-wrap">
+    <table class="tbl" id="raw_div"></table>
+  </div>
+
+</div><!-- /rawdata -->
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Source: Tennessee Comptroller of the Treasury Annual Audit Reports · FY2015–FY2025</span>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────────────────────
+const YRS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+
+// All figures in exact dollars as reported in TN Comptroller audited statements
+const REV = {
+  electric:   [144246234,143176846,150026246,146868959,147476393,140370460,139586872,151727401,165274420,156558020,171409996],
+  gas:        [ 39689790, 30424584, 31638981, 38043577, 37042614, 33190425, 36143199, 42891753, 42759028, 34242956, 38988822],
+  water:      [ 15498818, 16177907, 16745031, 17870650, 17691323, 17810015, 18551417, 18835866, 19420400, 20168700, 20978738],
+  wastewater: [ 16437711, 17487130, 18166533, 19288259, 19646948, 19505470, 20563173, 21150696, 21247353, 21221683, 21561791],
+  telecom:    [ 29139259, 30523543, 31705640, 32406988, 32416014, 32679849, 33062800, 34863072, 35164212, 35484751, 36478822],
+  total:      [245011812,237790010,248282431,254478433,254273292,243556219,247907461,269468788,283865413,267676110,289418169],
+};
+
+const EXP = {
+  cos:        [147543808,136611457,142043134,143982087,143558148,134341453,133755493,152401832,166017971,148552106,165368355],
+  ops:        [ 40261601, 43013558, 42977197, 39665152, 29976746, 44087826, 46697753, 37870893, 51687017, 51916895, 50716265],
+  maint:      [  6862896,  7261743,  7223396,  7786866,  8096789,  8560116,  9518202,  9755504, 11268162, 11944673, 12437335],
+  depr:       [ 23463108, 24795546, 25147142, 25937501, 26696636, 27014685, 27381705, 28084355, 28926573, 29933297, 29980770],
+  pilot:      [  5657927,  5897440,  6040665,  6776302,  6879311,  6678925,  6409666,  6594916,  6325521,  6635437,  6232648],
+  total:      [225101187,219922566,225865227,226559039,218073336,223300670,226937559,238129796,267540015,252544939,268472403],
+};
+
+const OI = YRS.map((_,i) => REV.total[i] - EXP.total[i]);
+
+// Exact net position totals from statements
+const NET = [355310959,370188252,390480189,372224583,414318371,437870687,463685644,496741064,524502498,547863196,578401654];
+const CHGNET = [16326071,14877293,20291937,27752157,40191883,23337923,25789019,33055420,27761434,23360698,30538458];
+
+// Electric fund balance sheet — exact figures
+const BS_EL = {
+  assets:     [208118875,206427217,208401369,210018491,209047121,209187951,213878206,220079901,230227742,225341321,241741829],
+  liabilities:[ 93217326, 92062375, 91162994,103610474, 91980403, 82026259, 82268413, 72476604, 79953372, 60895978, 63211354],
+  netpos:     [116895113,119405513,124129747,116657492,127389595,133249416,138311155,146715359,160551944,170015059,179912399],
+  capassets:  [136871748,141305171,140921873,139326072,136409534,138218178,137537614,137240493,149127438,157052013,161303897],
+  currassets: [ 71247127, 65122046, 67479496, 70692419, 72637587, 70969773, 76340592, 82839408, 81100304, 68289308, 80437932],
+};
+
+// Net position by division FY2025 — exact
+const NP25 = { electric:179912399, gas:113679605, water:123967514, wastewater:135329798, telecom:25512338 };
+
+// Division operating income FY2025 — exact
+const OI25_DIV = { electric:6999786, gas:2195718, water:4246318, wastewater:3785983, telecom:3717961 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHART HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+Chart.defaults.font.family = "'Source Sans 3', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#6B7B8D';
+
+const NAVY  = '#0D1B2E';
+const NAVY2 = '#1A3050';
+const NAVY3 = '#2A4A70';
+const RED   = '#C41230';
+const GREEN = '#0F6B3A';
+const STEEL = '#7A9AB8';
+const LGRAY = '#E2E6EA';
+const GC    = '#EDF0F3';
+
+const DIV_COLORS = {
+  electric:'#0D1B2E', gas:'#1A3050', water:'#2A4A70',
+  wastewater:'#4A80A8', telecom:'#7AAAC8'
+};
+
+const f  = v => '$' + Math.abs(v).toLocaleString();
+const fp = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+const fr = v => v.toFixed(2);
+const fm = v => '$' + (Math.abs(v)/1000000).toFixed(3) + 'M'; // for chart axis labels
+
+function ax(yLabel) {
+  return {
+    x:{ ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'} },
+    y:{ ticks:{color:'#6B7B8D',callback: v=>yLabel?v+yLabel:'$'+(v/1000000).toFixed(1)+'M'}, grid:{color:GC}, border:{color:'#CDD4DC'} }
+  };
+}
+
+function miniLine(id, data, color, min) {
+  const opts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+f(ctx.parsed.y)}}},
+    scales: ax()
+  };
+  if (min !== undefined) opts.scales.y.min = min;
+  new Chart(document.getElementById(id), {
+    type:'line',
+    data:{ labels:YRS,
+      datasets:[{data, borderColor:color||NAVY, backgroundColor:(color||NAVY)+'18',
+        borderWidth:2, pointRadius:3, pointBackgroundColor:color||NAVY,
+        pointBorderColor:'#fff', pointBorderWidth:1.5, fill:true, tension:0.3}]
+    }, options:opts
+  });
+}
+
+function miniBar(id, data, color) {
+  new Chart(document.getElementById(id), {
+    type:'bar',
+    data:{ labels:YRS, datasets:[{data, backgroundColor:data.map(v=>v>=0?color+'99':RED+'99'),
+      borderColor:data.map(v=>v>=0?color:RED), borderWidth:1, borderRadius:2}] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toFixed(1)+'%'}}},
+      scales: {
+        x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+        y:{ticks:{color:'#6B7B8D',callback:v=>v+'%'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 1: OVERVIEW
+// ─────────────────────────────────────────────────────────────────────────────
+// Revenue + income combo
+new Chart(document.getElementById('ov_rev'), {
+  type:'bar',
+  data:{ labels:YRS, datasets:[
+    { label:'Total Revenue', data:REV.total,
+      backgroundColor:YRS.map(y=>y===2025?NAVY:'#B0C4D8'),
+      borderColor:YRS.map(y=>y===2025?NAVY:'#8AAAC8'),
+      borderWidth:1, borderRadius:2, order:2 },
+    { label:'Operating Income', data:OI, type:'line',
+      borderColor:RED, backgroundColor:'transparent', borderWidth:2.5,
+      pointRadius:4, pointBackgroundColor:RED, pointBorderColor:'#fff', pointBorderWidth:1.5,
+      tension:0.3, order:1 }
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+f(ctx.parsed.y)}}},
+    scales:ax()
+  }
+});
+
+// Mix donut
+const mL=['Electric','Natural Gas','Water','Wastewater','EPlus Broadband'];
+const mV=[171409996,38988822,20978738,21561791,36478822];
+const mC=Object.values(DIV_COLORS);
+const mTot = REV.total[10];
+document.getElementById('ov_mix_leg').innerHTML = mL.map((l,i)=>`<span class="li"><span class="ls" style="background:${mC[i]}"></span>${l} ${((mV[i]/mTot)*100).toFixed(1)}%</span>`).join('');
+new Chart(document.getElementById('ov_mix'),{
+  type:'doughnut', data:{ labels:mL, datasets:[{data:mV, backgroundColor:mC, borderColor:'#fff', borderWidth:2, hoverOffset:4}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'65%',
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+f(ctx.parsed)+' ('+((ctx.parsed/mTot)*100).toFixed(1)+'%)'}}}}
+});
+
+// Net position
+new Chart(document.getElementById('ov_net'),{
+  type:'line', data:{ labels:YRS, datasets:[{
+    data:NET, borderColor:NAVY, backgroundColor:NAVY+'0D', borderWidth:2.5,
+    pointRadius:3, pointBackgroundColor:NAVY, pointBorderColor:'#fff', pointBorderWidth:1.5, fill:true, tension:0.3
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+f(ctx.parsed.y)}}},
+    scales:ax()
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 2: REVENUE
+// ─────────────────────────────────────────────────────────────────────────────
+// Stacked bar
+new Chart(document.getElementById('rv_stack'),{
+  type:'bar',
+  data:{ labels:YRS, datasets:[
+    { label:'Electric',    data:REV.electric,   backgroundColor:'#0D1B2E', stack:'a' },
+    { label:'Gas',         data:REV.gas,         backgroundColor:'#1A3050', stack:'a' },
+    { label:'Water',       data:REV.water,       backgroundColor:'#2A4A70', stack:'a' },
+    { label:'Wastewater',  data:REV.wastewater,  backgroundColor:'#4A80A8', stack:'a' },
+    { label:'Telecom',     data:REV.telecom,     backgroundColor:'#7AAAC8', stack:'a' },
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}, color:'#3A4A5C'}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+f(ctx.parsed.y)}}},
+    scales:{
+      x:{stacked:true, ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{stacked:true, ticks:{color:'#6B7B8D',callback:v=>'$'+(v/1000000).toFixed(0)+'M'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+miniLine('rv_elec', REV.electric, NAVY);
+miniLine('rv_gas',  REV.gas,  NAVY2);
+miniLine('rv_water',REV.water,NAVY3);
+miniLine('rv_ww',   REV.wastewater,'#4A80A8');
+miniLine('rv_tele', REV.telecom,'#7AAAC8');
+
+// YoY growth %
+const yoyKeys = ['electric','gas','water','wastewater','telecom'];
+const yoyColors = Object.values(DIV_COLORS);
+new Chart(document.getElementById('rv_yoy'),{
+  type:'bar',
+  data:{ labels:YRS.slice(1), datasets: yoyKeys.map((k,i)=>({
+    label: k.charAt(0).toUpperCase()+k.slice(1),
+    data: YRS.slice(1).map((_,j)=>+((REV[k][j+1]-REV[k][j])/REV[k][j]*100).toFixed(1)),
+    backgroundColor:yoyColors[i]+'88', borderColor:yoyColors[i], borderWidth:1, borderRadius:2,
+  }))},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}, color:'#3A4A5C'}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+'%'}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v+'%'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+// Revenue division table
+(function(){
+  const t = document.getElementById('rv_table');
+  const divNames = {electric:'Electric',gas:'Natural Gas',water:'Water',wastewater:'Wastewater',telecom:'EPlus Broadband'};
+  t.innerHTML = `<thead><tr><th>Division</th>${YRS.map(y=>`<th>${y}</th>`).join('')}<th>10-yr Change</th></tr></thead><tbody>${
+    Object.keys(divNames).map(k=>{
+      const chg = ((REV[k][10]-REV[k][0])/REV[k][0]*100).toFixed(1);
+      return `<tr><td class="bold">${divNames[k]}</td>${REV[k].map(v=>`<td>${f(v)}</td>`).join('')}<td class="${+chg>=0?'pos':'neg'}">${+chg>=0?'+':''}${chg}%</td></tr>`;
+    }).join('')
+  }<tr class="total"><td class="bold">TOTAL</td>${REV.total.map(v=>`<td>${f(v)}</td>`).join('')}<td class="pos">+${((REV.total[10]-REV.total[0])/REV.total[0]*100).toFixed(1)}%</td></tr></tbody>`;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 3: EXPENSES
+// ─────────────────────────────────────────────────────────────────────────────
+// Revenue vs Expenses
+new Chart(document.getElementById('ex_revexp'),{
+  type:'bar',
+  data:{ labels:YRS, datasets:[
+    { label:'Total Revenue', data:REV.total, backgroundColor:'#B0C4D8', borderColor:NAVY2, borderWidth:1, borderRadius:2, order:2 },
+    { label:'Total Expenses', data:EXP.total, backgroundColor:RED+'33', borderColor:RED, borderWidth:1, borderRadius:2, order:3 },
+    { label:'Operating Income', data:OI, type:'line', borderColor:GREEN, backgroundColor:'transparent',
+      borderWidth:2, pointRadius:3, pointBackgroundColor:GREEN, tension:0.3, order:1 }
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}, color:'#3A4A5C'}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+f(ctx.parsed.y)}}},
+    scales:ax()
+  }
+});
+
+// Expense donut FY2025
+const eL=['Cost of Sales & Services','Operations Expense','Depreciation','Maintenance','PILOT','Other Taxes/Amort'];
+const eV=[165368355,50716265,29980770,12437335,6232648,3737030];
+const eC=['#0D1B2E','#1A3050','#2A4A70','#4A80A8','#7AAAC8','#A0C4DC'];
+document.getElementById('ex_leg').innerHTML = eL.map((l,i)=>`<span class="li"><span class="ls" style="background:${eC[i]}"></span>${l}</span>`).join('');
+new Chart(document.getElementById('ex_donut'),{
+  type:'doughnut', data:{ labels:eL, datasets:[{data:eV, backgroundColor:eC, borderColor:'#fff', borderWidth:2, hoverOffset:4}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+f(ctx.parsed)}}}}
+});
+
+miniLine('ex_cos',  EXP.cos,  NAVY);
+miniLine('ex_om',   EXP.ops.map((v,i)=>v+EXP.maint[i]),  NAVY2);
+miniLine('ex_dep',  EXP.depr, NAVY3);
+miniLine('ex_pilot',EXP.pilot,'#4A80A8');
+
+// Operating margin %
+const margins = YRS.map((_,i) => +((OI[i]/REV.total[i])*100).toFixed(1));
+new Chart(document.getElementById('ex_margin'),{
+  type:'line',
+  data:{ labels:YRS, datasets:[{
+    data:margins, borderColor:NAVY, backgroundColor:NAVY+'0D', borderWidth:2.5,
+    pointRadius:4, pointBackgroundColor:margins.map(v=>v>=8?GREEN:v>=5?NAVY:RED),
+    pointBorderColor:'#fff', pointBorderWidth:1.5, fill:true, tension:0.3
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toFixed(1)+'%'}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v+'%'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 4: BALANCE SHEET
+// ─────────────────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('bs_el_al'),{
+  type:'bar',
+  data:{ labels:YRS, datasets:[
+    { label:'Total Assets', data:BS_EL.assets, backgroundColor:'#B0C4D8', borderColor:NAVY2, borderWidth:1, borderRadius:2 },
+    { label:'Total Liabilities', data:BS_EL.liabilities, backgroundColor:RED+'33', borderColor:RED, borderWidth:1, borderRadius:2 },
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+f(ctx.parsed.y)}}},
+    scales:ax()
+  }
+});
+
+miniLine('bs_el_net', BS_EL.netpos, NAVY);
+
+// Division net position donut FY2025
+const divNPL=['Electric','Natural Gas','Water','Wastewater','Telecom'];
+const divNPV=Object.values(NP25);
+document.getElementById('bs_div_leg').innerHTML=divNPL.map((l,i)=>`<span class="li"><span class="ls" style="background:${mC[i]}"></span>${l} ${f(divNPV[i])}</span>`).join('');
+new Chart(document.getElementById('bs_div'),{
+  type:'doughnut', data:{ labels:divNPL, datasets:[{data:divNPV, backgroundColor:mC, borderColor:'#fff', borderWidth:2, hoverOffset:4}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+f(ctx.parsed)}}}}
+});
+
+miniLine('bs_total', NET, NAVY);
+
+// Capital vs current assets
+new Chart(document.getElementById('bs_capasset'),{
+  type:'bar',
+  data:{ labels:YRS, datasets:[
+    { label:'Capital Assets', data:BS_EL.capassets, backgroundColor:NAVY+'CC', borderWidth:0, borderRadius:2 },
+    { label:'Current & Other Assets', data:BS_EL.currassets, backgroundColor:STEEL+'88', borderWidth:0, borderRadius:2 },
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+f(ctx.parsed.y)}}},
+    scales:ax()
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 5: RATIOS
+// ─────────────────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('ra_margin'),{
+  type:'line',
+  data:{ labels:YRS, datasets:[{
+    data:margins, borderColor:NAVY, backgroundColor:NAVY+'0D', borderWidth:2.5,
+    pointRadius:4, pointBackgroundColor:margins.map(v=>v>=8?GREEN:v>=5?NAVY:RED),
+    pointBorderColor:'#fff', pointBorderWidth:1.5, fill:true, tension:0.3
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toFixed(1)+'%'}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v+'%'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+const coverage = YRS.map((_,i) => +(REV.total[i]/EXP.total[i]).toFixed(4));
+new Chart(document.getElementById('ra_cov'),{
+  type:'line',
+  data:{ labels:YRS, datasets:[{
+    data:coverage, borderColor:NAVY, backgroundColor:NAVY+'0D', borderWidth:2.5,
+    pointRadius:4, pointBackgroundColor:coverage.map(v=>v>=1.1?GREEN:v>=1.0?NAVY:RED),
+    pointBorderColor:'#fff', pointBorderWidth:1.5, fill:true, tension:0.3
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toFixed(4)+'x'}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v.toFixed(2)+'x'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+// Division OI FY2025 horizontal
+new Chart(document.getElementById('ra_div_oi'),{
+  type:'bar',
+  data:{ labels:['Electric','Gas','Water','Wastewater','EPlus Broadband'],
+    datasets:[{ data:Object.values(OI25_DIV), backgroundColor:Object.values(DIV_COLORS), borderWidth:0, borderRadius:3 }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+f(ctx.parsed.x)}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',callback:v=>'$'+(v/1000000).toFixed(2)+'M'}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#3A4A5C', font:{weight:'400'}}, grid:{display:false}, border:{display:false}}
+    }
+  }
+});
+
+// Revenue growth index (base 100 = 2015)
+new Chart(document.getElementById('ra_idx'),{
+  type:'line',
+  data:{ labels:YRS, datasets: Object.keys(DIV_COLORS).map((k,i)=>({
+    label:k.charAt(0).toUpperCase()+k.slice(1),
+    data:REV[k].map(v=>+(v/REV[k][0]*100).toFixed(1)),
+    borderColor:Object.values(DIV_COLORS)[i],
+    backgroundColor:'transparent', borderWidth:1.8,
+    pointRadius:2, tension:0.3,
+  }))},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}}},
+      tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(0)}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+// PILOT %
+const pilotPct = YRS.map((_,i)=>+(EXP.pilot[i]/REV.total[i]*100).toFixed(2));
+new Chart(document.getElementById('ra_pilot_pct'),{
+  type:'bar',
+  data:{ labels:YRS, datasets:[{
+    data:pilotPct, backgroundColor:NAVY+'99', borderColor:NAVY, borderWidth:1, borderRadius:2
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toFixed(2)+'% of revenue'}}},
+    scales:{
+      x:{ticks:{color:'#6B7B8D',autoSkip:false}, grid:{color:GC}, border:{color:'#CDD4DC'}},
+      y:{ticks:{color:'#6B7B8D',callback:v=>v+'%'}, grid:{color:GC}, border:{color:'#CDD4DC'}}
+    }
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 6: RAW DATA TABLES
+// ─────────────────────────────────────────────────────────────────────────────
+// Income statement
+(function(){
+  const t = document.getElementById('raw_income');
+  const rows = [
+    { label:'REVENUES', section:true },
+    { label:'Electric Fund', key:'electric', src:'REV' },
+    { label:'Gas Fund', key:'gas', src:'REV' },
+    { label:'Water Fund', key:'water', src:'REV' },
+    { label:'Wastewater Fund', key:'wastewater', src:'REV' },
+    { label:'Telecom / EPlus', key:'telecom', src:'REV' },
+    { label:'Total Operating Revenue', key:'total', src:'REV', total:true },
+    { label:'EXPENSES', section:true },
+    { label:'Cost of Sales & Services', key:'cos', src:'EXP' },
+    { label:'Operations Expense', key:'ops', src:'EXP' },
+    { label:'Provision for Depreciation', key:'depr', src:'EXP' },
+    { label:'Maintenance Expense', key:'maint', src:'EXP' },
+    { label:'Pay-in-Lieu of Taxes', key:'pilot', src:'EXP' },
+    { label:'Total Operating Expenses', key:'total', src:'EXP', total:true },
+    { label:'OPERATING INCOME', section:true },
+    { label:'Operating Income', key:'oi', src:'CALC', total:true },
+  ];
+
+  const DATA = {REV, EXP, CALC:{oi:OI}};
+  t.innerHTML = `<thead><tr><th style="min-width:200px">Line Item</th>${YRS.map(y=>`<th>${y}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(r=>{
+    if(r.section) return `<tr class="section-row"><td colspan="${YRS.length+1}">${r.label}</td></tr>`;
+    const vals = DATA[r.src][r.key];
+    const cls = r.total ? 'class="total"':'';
+    return `<tr ${cls}><td class="${r.total?'bold':''}">${r.label}</td>${vals.map((v,i)=>{
+      let style='';
+      if(r.key==='oi' && v<0) style='style="color:var(--red)"';
+      return `<td ${style}>${f(v)}</td>`;
+    }).join('')}</tr>`;
+  }).join('')}</tbody>`;
+})();
+
+// Balance sheet
+(function(){
+  const t = document.getElementById('raw_bs');
+  const rows = [
+    { label:'Current & Other Assets', key:'currassets' },
+    { label:'Capital Assets', key:'capassets' },
+    { label:'Total Assets', key:'assets', total:true },
+    { label:'Total Liabilities', key:'liabilities' },
+    { label:'Net Position', key:'netpos', total:true },
+  ];
+  t.innerHTML = `<thead><tr><th style="min-width:200px">Electric Fund</th>${YRS.map(y=>`<th>${y}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(r=>{
+    const cls = r.total ? 'class="total"':'';
+    return `<tr ${cls}><td class="${r.total?'bold':''}">${r.label}</td>${BS_EL[r.key].map(v=>`<td>${f(v)}</td>`).join('')}</tr>`;
+  }).join('')}</tbody>`;
+})();
+
+// Division detail
+(function(){
+  const t = document.getElementById('raw_div');
+  const cols = ['electric','gas','water','wastewater','telecom'];
+  const names = ['Electric','Natural Gas','Water','Wastewater','EPlus Broadband'];
+  t.innerHTML = `<thead><tr><th>Fiscal Year</th>${names.map(n=>`<th>${n}</th>`).join('')}<th>Total</th><th>YoY %</th></tr></thead>
+  <tbody>${YRS.map((y,i)=>{
+    const tot = REV.total[i];
+    const prev = i>0?REV.total[i-1]:null;
+    const yoy = prev ? ((tot-prev)/prev*100).toFixed(1) : '—';
+    const yoyClass = prev && +yoy>=0?'pos':'neg';
+    return `<tr><td class="bold">${y}</td>${cols.map(k=>`<td>${f(REV[k][i])}</td>`).join('')}<td class="bold">${f(tot)}</td><td class="${i>0?yoyClass:''}">${i>0?(+yoy>=0?'+':'')+yoy+'%':'—'}</td></tr>`;
+  }).join('')}</tbody>`;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+  // Trigger chart resize on tab show
+  setTimeout(()=>{ Chart.instances.forEach(c=>c.resize()); }, 50);
+}
+</script>
+</body>
+</html>
